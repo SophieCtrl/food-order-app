@@ -1,7 +1,11 @@
+import { useContext } from "react";
+import { CartContext } from "../store/cart-context";
 import Button from "./Button";
 import CurrencyFormatter from "./CurrencyFormatter";
 
-export default function Cart({ cartData, onSubmit, setModalIsOpen }) {
+export default function Cart({ onSubmit, setModalIsOpen }) {
+  const { items, products } = useContext(CartContext);
+
   const handleCloseModal = () => {
     setModalIsOpen(false);
   };
@@ -12,16 +16,20 @@ export default function Cart({ cartData, onSubmit, setModalIsOpen }) {
     <div className="cart">
       <h2>Your Cart</h2>
       <ul>
-        {cartData.map((meal) => {
-          cartSum += +meal.price;
+        {items.map((itemId) => {
+          const item = products.find((product) => product.id === itemId);
+
+          const itemTotal = +item.price * cartItem.quantity;
+          cartSum += itemTotal;
 
           return (
-            <li key={meal.id} className="cart-item">
+            <li key={item.id} className="cart-item">
               <p>
-                {meal.name} - {<CurrencyFormatter value={+meal.price} />}
+                {item.name} - {<CurrencyFormatter value={+item.price} />} x{" "}
+                {cartItem.quantity} = {<CurrencyFormatter value={itemTotal} />}
               </p>
               <button>-</button>
-              <p>0</p>
+              <p>{cartItem.quantity}</p>
               <button>+</button>
             </li>
           );

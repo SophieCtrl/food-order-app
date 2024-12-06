@@ -1,61 +1,32 @@
-import { useEffect, useState } from "react";
+import { useContext } from "react";
+import CartContextProvider from "./store/cart-context";
+import { CartContext } from "./store/cart-context";
+import { useState } from "react";
 import Header from "./components/Header";
 import Products from "./components/Products";
 import Modal from "./components/Modal";
 import Cart from "./components/Cart";
 
 function App() {
-  const [isFetching, setIsFetching] = useState(false);
-  const [error, setError] = useState();
-  const [fetchedData, setFetchedData] = useState([]);
+  const { items, products, isFetching, error } = useContext(CartContext);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
-  const [selectedMeals, setSelectedMeals] = useState([]);
-
-  const handleAddMeal = (newMeal) => {
-    setSelectedMeals((prevMeals) => [newMeal, ...prevMeals]);
+  const handleShowCart = () => {
+    setModalIsOpen(true);
   };
 
   const handleCartSubmit = () => {
     setModalIsOpen(false);
   };
 
-  const handleShowCart = () => {
-    console.log(selectedMeals);
-    setModalIsOpen(true);
-  };
-
-  useEffect(() => {
-    async function fetchData() {
-      setIsFetching(true);
-      try {
-        const response = await fetch("http://localhost:3000/meals");
-        const data = await response.json();
-        setFetchedData(data);
-      } catch (error) {
-        setError({ message: error.message || "Failed to fetch meal data." });
-      }
-      setIsFetching(false);
-    }
-    fetchData();
-  }, []);
-
   return (
-    <>
+    <CartContextProvider>
       <Modal open={modalIsOpen}>
-        <Cart
-          cartData={selectedMeals}
-          onSubmit={handleCartSubmit}
-          setModalIsOpen={setModalIsOpen}
-        />
+        <Cart onSubmit={handleCartSubmit} setModalIsOpen={setModalIsOpen} />
       </Modal>
       <Header onShowCart={handleShowCart} />
-      {isFetching ? (
-        "Data is loading..."
-      ) : (
-        <Products data={fetchedData} onAdd={handleAddMeal} />
-      )}
-    </>
+      {isFetching ? "Data is loading..." : <Products />}
+    </CartContextProvider>
   );
 }
 
