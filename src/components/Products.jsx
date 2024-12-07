@@ -17,7 +17,7 @@ export default function Products({ data, onAdd }) {
                 <h3>{name}</h3>
                 <p className="meal-item-price">{price}</p>
                 <p className="meal-item-description">{description}</p>
-                <Button onClick={() => addItem(product)}>Add to Cart</Button>
+                <Button onClick={() => addItem(product.id)}>Add to Cart</Button>
               </div>
             </article>
           </li>

@@ -4,58 +4,40 @@ export const CartContext = createContext({
   items: [],
   products: [],
   isFetching: false,
-  error: "",
+  error: null,
   addItem: () => {},
   updateItemQuantity: () => {},
 });
 
 const shoppingCartReducer = (state, action) => {
   if (action.type === "ADD_ITEM") {
-    const updatedItems = [...state.items];
-
-    const existingCartItemIndex = updatedItems.findIndex(
+    const existingCartItemIndex = state.items.findIndex(
       (cartItem) => cartItem.id === action.payload
     );
-    const existingCartItem = updatedItems[existingCartItemIndex];
 
-    if (existingCartItem) {
-      const updatedItem = {
-        ...existingCartItem,
-        quantity: existingCartItem.quantity + 1,
-      };
-      updatedItems[existingCartItemIndex] = updatedItem;
-    } else {
-      const productToAdd = state.products.find(
-        (product) => product.id === action.payload
+    if (existingCartItemIndex >= 0) {
+      const updatedItems = state.items.map((item, index) =>
+        index === existingCartItemIndex
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
       );
-      updatedItems.push({
-        ...productToAdd,
-        quantity: 1,
-      });
-    }
-
-    return {
-      ...state,
-      items: updatedItems,
-    };
-  } else if (action.type === "UPDATE_ITEM") {
-    const updatedItems = [...state.items];
-    const updatedItemIndex = updatedItems.find(
-      (item) => item.id === action.payload.id
-    );
-    const updatedItem = updatedItems[updatedItemIndex];
-
-    updatedItem.quantity += action.payload.amaount;
-    if (updatedItem.quantity <= 0) {
-      updatedItems.splice(updatedItemIndex, 1);
+      return { ...state, items: updatedItems };
     } else {
-      updatedItem[updatedItemIndex] = updatedItem;
+      return {
+        ...state,
+        items: [...state.items, { id: action.payload, quantity: 1 }],
+      };
     }
+  } else if (action.type === "UPDATE_ITEM") {
+    const updatedItems = state.items
+      .map((item) =>
+        item.id === action.payload.id
+          ? { ...item, quantity: item.quantity + action.payload.amount }
+          : item
+      )
+      .filter((item) => item.amount > 0);
 
-    return {
-      ...state,
-      items: updatedItems,
-    };
+    return { ...state, items: updatedItems };
   } else if (action.type === "SET_PRODUCTS") {
     return {
       ...state,
@@ -79,6 +61,9 @@ const CartContextProvider = ({ children }) => {
       setIsFetching(true);
       try {
         const response = await fetch("http://localhost:3000/meals");
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
         const data = await response.json();
         cartDispatch({ type: "SET_PRODUCTS", payload: data });
       } catch (error) {
