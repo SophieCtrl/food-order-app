@@ -8,7 +8,7 @@ import Modal from "./components/Modal";
 import Cart from "./components/Cart";
 
 function App() {
-  const { items, products, isFetching, error } = useContext(CartContext);
+  const { isFetching } = useContext(CartContext);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   const handleShowCart = () => {
@@ -22,7 +22,10 @@ function App() {
   return (
     <CartContextProvider>
       <Modal open={modalIsOpen}>
-        <Cart onSubmit={handleCartSubmit} setModalIsOpen={setModalIsOpen} />
+        <Cart
+          onSubmit={handleCartSubmit}
+          onClose={() => setModalIsOpen(false)}
+        />
       </Modal>
       <Header onShowCart={handleShowCart} />
       {isFetching ? "Data is loading..." : <Products />}

@@ -1,16 +1,12 @@
 import { useContext } from "react";
 import { CartContext } from "../store/cart-context";
 import Button from "./Button";
-import CurrencyFormatter from "./CurrencyFormatter";
+import CurrencyFormatter from "../util/CurrencyFormatter";
 
-export default function Cart({ onSubmit, setModalIsOpen }) {
+export default function Cart({ onSubmit, onClose }) {
   const { items, products, isFetching, updateItemQuantity } =
     useContext(CartContext);
   console.log(items);
-
-  const handleCloseModal = () => {
-    setModalIsOpen(false);
-  };
 
   let cartSum = 0;
   let cartContent;
@@ -58,8 +54,10 @@ export default function Cart({ onSubmit, setModalIsOpen }) {
       <h2>Your Cart</h2>
       {cartContent}
       <div className="cart-item-action">
-        <button onClick={handleCloseModal}>Close</button>
-        <Button onClick={onSubmit}>Go to Checkout</Button>
+        <button onClick={onClose}>Close</button>
+        <Button textOnly={false} onClick={onSubmit}>
+          Go to Checkout
+        </Button>
       </div>
     </div>
   );

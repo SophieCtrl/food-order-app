@@ -1,4 +1,5 @@
 import logo from "../assets/logo.jpg";
+import Button from "./Button";
 
 export default function Header({ onShowCart }) {
   return (
@@ -7,7 +8,9 @@ export default function Header({ onShowCart }) {
         <img src={logo} alt="UrbanFoodie Logo" />
         <h1>UrbanFoodie</h1>
       </div>
-      <button onClick={onShowCart}>Cart</button>
+      <Button textOnly onClick={onShowCart}>
+        Cart
+      </Button>
     </div>
   );
 }

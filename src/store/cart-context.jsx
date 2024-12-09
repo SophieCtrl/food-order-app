@@ -35,7 +35,7 @@ const shoppingCartReducer = (state, action) => {
           ? { ...item, quantity: item.quantity + action.payload.amount }
           : item
       )
-      .filter((item) => item.amount > 0);
+      .filter((item) => item.quantity > 0);
 
     return { ...state, items: updatedItems };
   } else if (action.type === "SET_PRODUCTS") {
