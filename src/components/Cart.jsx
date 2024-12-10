@@ -1,11 +1,18 @@
 import { useContext } from "react";
 import { CartContext } from "../store/cart-context";
-import Button from "./Button";
+import { UserProgressContext } from "../store/progress-context";
+import Button from "./UI/Button";
 import CartItems from "./CartItems";
+import Modal from "./UI/Modal";
 
-export default function Cart({ onSubmit, onClose }) {
+export default function Cart() {
   const { items, isFetching } = useContext(CartContext);
-  console.log(items);
+  const { progress, hideCart, showCheckout } = useContext(UserProgressContext);
+
+  const handleSubmitCart = () => {
+    hideCart();
+    showCheckout();
+  };
 
   let cartContent;
 
@@ -18,19 +25,21 @@ export default function Cart({ onSubmit, onClose }) {
   }
 
   return (
-    <div className="cart">
-      <h2>Your Cart</h2>
-      {cartContent}
-      <p className="modal-actions">
-        <Button textOnly style={{ color: "black" }} onClick={onClose}>
-          Close
-        </Button>
-        {items.length ? (
-          <Button textOnly={false} onClick={onSubmit}>
-            Go to Checkout
+    <Modal open={progress === "cart"}>
+      <div className="cart">
+        <h2>Your Cart</h2>
+        {cartContent}
+        <p className="modal-actions">
+          <Button textOnly style={{ color: "black" }} onClick={hideCart}>
+            Close
           </Button>
-        ) : null}
-      </p>
-    </div>
+          {items.length ? (
+            <Button textOnly={false} onClick={handleSubmitCart}>
+              Go to Checkout
+            </Button>
+          ) : null}
+        </p>
+      </div>
+    </Modal>
   );
 }

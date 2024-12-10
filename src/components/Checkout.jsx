@@ -1,7 +1,14 @@
-import { useState } from "react";
-import Input from "./Input";
+import { useState, useContext } from "react";
+import { CartContext } from "../store/cart-context";
+import { UserProgressContext } from "../store/progress-context";
+import Modal from "./UI/Modal";
+import Input from "./UI/Input";
+import Button from "./UI/Button";
 
 export default function Checkout() {
+  const cartCtx = useContext(CartContext);
+  const { progress, hideCheckout } = useContext(UserProgressContext);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -9,6 +16,11 @@ export default function Checkout() {
     postCode: "",
     city: "",
   });
+
+  const cartTotal = cartCtx.items.reduce(
+    (totalPrice, item) => totalPrice + item.quantity * item.price,
+    0
+  );
 
   const handleChange = (event, id) => {
     setFormData((prevData) => ({ ...prevData, [id]: event.target.value }));
@@ -19,9 +31,9 @@ export default function Checkout() {
   };
 
   return (
-    <>
+    <Modal open={progress === "checkout"}>
       <h2>Checkout</h2>
-      <p>Total Amount: X</p>
+      <p>Total Amount: {cartTotal}</p>
       <form>
         <Input
           label="Full Name"
@@ -44,23 +56,25 @@ export default function Checkout() {
           value={formData.street}
           onChange={() => handleChange("street")}
         />
-        <Input
-          label="Postal Code"
-          id="postCode"
-          type="number"
-          value={formData.postCode}
-          onChange={() => handleChange("postCode")}
-        />
-        <Input
-          label="City"
-          id="city"
-          type="text"
-          value={formData.city}
-          onChange={() => handleChange("text")}
-        />
+        <div className="control-row">
+          <Input
+            label="Postal Code"
+            id="postCode"
+            type="number"
+            value={formData.postCode}
+            onChange={() => handleChange("postCode")}
+          />
+          <Input
+            label="City"
+            id="city"
+            type="text"
+            value={formData.city}
+            onChange={() => handleChange("text")}
+          />
+        </div>
 
         <p className="modal-actions">
-          <Button textOnly style={{ color: "black" }}>
+          <Button textOnly style={{ color: "black" }} onClick={hideCheckout}>
             Close
           </Button>
           <Button textOnly={false} onClick={handleSubmit}>
@@ -68,6 +82,6 @@ export default function Checkout() {
           </Button>
         </p>
       </form>
-    </>
+    </Modal>
   );
 }
