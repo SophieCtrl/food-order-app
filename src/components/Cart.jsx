@@ -25,7 +25,10 @@ export default function Cart() {
   }
 
   return (
-    <Modal open={progress === "cart"}>
+    <Modal
+      open={progress === "cart"}
+      onClose={progress === "cart" ? hideCart : null}
+    >
       <div className="cart">
         <h2>Your Cart</h2>
         {cartContent}
