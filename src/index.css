@@ -248,6 +248,19 @@ h1 {
   background-color: rgba(0, 0, 0, 0.55);
 }
 
+.error {
+  margin: auto;
+  margin-top: 20px;
+  background-color: #bd4955;
+  border-radius: 6px;
+  border: 1px solid rgb(128, 9, 9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  padding: 1rem;
+  width: 80%;
+  max-width: 40rem;
+  animation: fade-slide-up 0.3s ease-out forwards;
+}
+
 @keyframes fade-slide-up {
   from {
     opacity: 0;
