@@ -1,4 +1,5 @@
 import { createContext, useReducer, useEffect, useState } from "react";
+import useHttp from "../hooks/useHttp";
 
 export const CartContext = createContext({
   items: [],
@@ -7,6 +8,7 @@ export const CartContext = createContext({
   error: null,
   addItem: () => {},
   updateItemQuantity: () => {},
+  clearCart: () => {},
 });
 
 const shoppingCartReducer = (state, action) => {
@@ -45,7 +47,15 @@ const shoppingCartReducer = (state, action) => {
     };
   }
 
+  if (action.type === "CLEAR_CART") {
+    return { ...state, items: [] };
+  }
+
   return state;
+};
+
+const getConfig = {
+  method: "GET",
 };
 
 const CartContextProvider = ({ children }) => {
@@ -53,27 +63,18 @@ const CartContextProvider = ({ children }) => {
     items: [],
     products: [],
   });
-  const [isFetching, setIsFetching] = useState(false);
-  const [error, setError] = useState(null);
+
+  const { data, isLoading, error } = useHttp(
+    "http://localhost:3000/meals",
+    getConfig,
+    []
+  );
 
   useEffect(() => {
-    async function fetchProducts() {
-      setIsFetching(true);
-      try {
-        const response = await fetch("http://localhost:3000/meals");
-        if (!response.ok) {
-          throw new Error("Failed to fetch products");
-        }
-        const data = await response.json();
-        cartDispatch({ type: "SET_PRODUCTS", payload: data });
-      } catch (error) {
-        setError(error.message || "Failed to fetch products");
-      } finally {
-        setIsFetching(false);
-      }
+    if (data) {
+      cartDispatch({ type: "SET_PRODUCTS", payload: data });
     }
-    fetchProducts();
-  }, []);
+  }, [data]);
 
   function handleAddItem(id) {
     cartDispatch({
@@ -89,13 +90,18 @@ const CartContextProvider = ({ children }) => {
     });
   }
 
+  function clearCart() {
+    cartDispatch({ type: "CLEAR_CART" });
+  }
+
   const ctxValue = {
     items: cartState.items,
     products: cartState.products,
-    isFetching,
+    isFetching: isLoading,
     error,
     addItem: handleAddItem,
     updateItemQuantity: handleUpdateItemQuantity,
+    clearCart,
   };
 
   return (

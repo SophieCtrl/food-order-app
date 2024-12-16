@@ -1,17 +1,29 @@
 import { useContext, useState } from "react";
 import { CartContext } from "../store/cart-context";
 import { UserProgressContext } from "../store/progress-context";
+import useHttp from "../hooks/useHttp";
 import CurrencyFormatter from "../util/CurrencyFormatter";
 import Modal from "./UI/Modal";
 import Input from "./UI/Input";
 import Button from "./UI/Button";
 import Error from "./UI/Error";
 
+const postConfig = {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+};
+
 export default function Checkout() {
-  const { items, products } = useContext(CartContext);
+  const { items, products, clearCart } = useContext(CartContext);
   const { progress, hideCheckout } = useContext(UserProgressContext);
-  const [isSending, setIsSending] = useState();
-  const [error, setError] = useState();
+
+  const {
+    data,
+    isLoading: isSending,
+    error,
+    sendRequest,
+    clearData,
+  } = useHttp("http://localhost:3000/orders", postConfig);
 
   const cartTotal = items.reduce((totalPrice, item) => {
     const productIndex = products.findIndex(
@@ -26,43 +38,42 @@ export default function Checkout() {
     const fd = new FormData(event.target);
     const customerData = Object.fromEntries(fd.entries());
 
-    setIsSending(true);
-    setError(null);
-    try {
-      const response = await fetch("http://localhost:3000/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          order: { items: items, customer: customerData },
-        }),
-      });
+    sendRequest(
+      JSON.stringify({
+        order: { items: items, customer: customerData },
+      })
+    );
+  }
 
-      if (!response.ok) {
-        throw new Error("Failed to send products.");
-      }
-      hideCheckout();
-    } catch (error) {
-      setError({ message: error.message || "Failed to send products." });
-    } finally {
-      setIsSending(false);
-    }
+  function handleFinish() {
+    hideCheckout();
+    clearCart();
+    clearData();
   }
 
   let actions = (
-    <p className="modal-actions">
+    <>
       <Button textOnly style={{ color: "black" }} onClick={hideCheckout}>
         Close
       </Button>
       <Button textOnly={false}>Submit Order</Button>
-    </p>
+    </>
   );
 
   if (isSending) {
     actions = "Sending data...";
   }
 
-  if (error) {
-    return <Error title="Something went wrong" message={error.message} />;
+  if (data && !error) {
+    return (
+      <Modal open={progress === "checkout"} onClose={handleFinish}>
+        <h2>Sucess!</h2>
+        <p>Your order was submitted successfully.</p>
+        <p className="modal-actions">
+          <Button onClick={handleFinish}>Okay</Button>
+        </p>
+      </Modal>
+    );
   }
 
   return (
@@ -77,7 +88,8 @@ export default function Checkout() {
           <Input label="Postal Code" id="postal-code" type="number" />
           <Input label="City" id="city" type="text" />
         </div>
-        {actions}
+        <p className="modal-actions">{actions}</p>
+        {error && <Error title="Failed to submit order" message={error} />}
       </form>
     </Modal>
   );
